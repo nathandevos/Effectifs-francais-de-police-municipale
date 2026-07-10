@@ -615,8 +615,34 @@ polmun=lapply(polmun,function(x){
     #On ôte des libellés les renvois à notes de type "_(2)" et les codes postaux
     lcom=str_remove(lcom,"_\\(_?[0-9a-zA-Z]_?\\)$|_\\(?_?[0-9]{5}_?\\)?$")
     ) %>% 
-  filter(!str_detect(lcom,"^[0-9]+$")&!is.na(lcom)) %>% 
-  select(reg,dep,ldep,everything()) %>%
+  group_by(annee,dep) %>% 
+  mutate(oc=max(row_number())) %>% 
+  ungroup() %>% 
+  #On élimine les libellés communaux égaux à des nombres ou vierges, car cela 
+  #indique presque systématiquement un total de nombre de services départemen-
+  #taux, avec pour données des autres colonnes des totaux d'agents. Une excep-
+  #tion est introduite dans le cas où il s'agit de la seule ligne consacrée à 
+  #un département, ce qui permet de recouvrer 6 points de données qui sont en-
+  #suite traités manuellement. La seule exception est la valeur 2018 pour la 
+  #Creuse, où les totaux départementaux à 0 semblent remplis automatiquement 
+  #et la ligne de données vierge au-dessus semble devoir être lue comme une 
+  #absence de données plutôt que comme des valeurs zéros. D'autant qu'une 
+  #valeur zéro pour les ASVP serait unique dans les remontées aubussonnaises
+  filter(!((str_detect(lcom,"^[0-9]+$")|is.na(lcom))&oc>1)) %>% 
+  select(-oc) %>% 
+  select(reg,dep,ldep,everything()) %>% 
+  mutate(lcom=case_when(
+    dep=="23"&annee<2026&is.na(lcom)~"AUBUSSON",
+    dep=="977"&annee<2026~"ST_BARTHELEMY",
+    dep=="978"&annee<2026~"ST_MARTIN",
+    dep=="975"&annee<2026&lcom=="0"~"ST_PIERRE",
+    T~lcom
+  )) %>% 
+  bind_rows(.,
+            filter(.,dep=="975"&annee==2023) %>% 
+              mutate(lcom="MIQUELON_LANGLADE")
+            ) %>% 
+  filter(!(lcom=="0"&dep=="23"&annee=="2019")) %>% 
   arrange(annee) %>% 
   arrange(lcom) %>% 
   arrange(dep)
