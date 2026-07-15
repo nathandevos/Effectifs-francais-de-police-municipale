@@ -227,17 +227,30 @@ redefinitionsdsb=function(x){
     x[which(x$dep=="22"),],
     ccom=case_when(
       str_detect(lcom,"GUINGAMP_PAIMPOL_AGGLO")~"200067981",
-      notes=="COMMUNAUTE"~as.character(NA),
+      notes=="COMMUNAUTE"&annee<2026~as.character(NA),
       T~ccom
     ),
+    ccomsub=case_when(
+      notes=="COMMUNAUTE"&annee<2026~as.character(NA),
+      T~ccomsub
+    ),
     lcom=case_when(
-      notes=="COMMUNAUTE"~"GUINGAMP_COMMUNAUTE",
+      notes=="COMMUNAUTE"&annee<2026~"GUINGAMP_COMMUNAUTE",
       T~lcom
     ),
     notes=case_when(
-      notes=="COMMUNAUTE"~as.character(NA),
+      notes=="COMMUNAUTE"&annee<2026~as.character(NA),
       T~notes
-    ),
+    )
+  )
+  
+  x[which(x$dep=="25"),]=mutate(
+    x[which(x$dep=="25"),],
+    ccom=case_when(
+      str_detect(lcom,"PAYS_DE_MAICHE")~"200023075",
+      str_detect(lcom,"PAYS_(DE_)?MONTBELIARD_AGGLO")~"200065647",
+      T~ccom
+    )
   )
   
   x[which(x$dep=="25"),]=mutate(
@@ -272,7 +285,7 @@ redefinitionsdsb=function(x){
     x[which(x$dep=="30"),],
     ccom=case_when(
       str_detect(lcom,"PAYS_D_UZES")~"200034379",
-      str_detect(lcom,"PONT_DU_GARD")~"243000684",
+      str_detect(lcom,"PONT_DU_GARD")&!str_detect(lcom,"VERS_PONT_DU_GARD")~"243000684",
       str_detect(lcom,"RHONY_VISTRE_VIDOURLE")~"243000569",
       str_detect(lcom,"PETITE_CAMARGUE")~"243000593",
       T~ccom
@@ -348,6 +361,14 @@ redefinitionsdsb=function(x){
       #CC du Grand Pic Saint Loup selon mon interprétation
       lcom=="EPCI_CCGPSL"~"200022986",
       T~ccom
+    ),
+    ccomsub=case_when(
+      lcom=="CHINON"&annee%in%2023:2025~as.character(NA),
+      T~ccomsub
+    ),
+    notes=case_when(
+      lcom=="CHINON"&annee%in%2023:2025~"EPCI",
+      T~notes
     )
   )
   
