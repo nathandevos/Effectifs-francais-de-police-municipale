@@ -234,6 +234,10 @@ polmundsb=polmun %>%
 #Pourcentage de codes standardisés complétés
 (polmundsb %>% filter(!is.na(ccom)) %>% nrow())/nrow(polmundsb)
 
+#On vérifie que ccomsub est bien vierge dans les cas d'une communauté de 
+#communes ou d'une colonne ccom également vierge
+polmundsb %>% filter(!is.na(ccomsub)&nchar(ccom)!=5) %>% View()
+
 #Vérification de la bonne concordance des libellés d'EPCI, afin d'identifier 
 #d'éventuelles erreurs de recopiage des codes dans la fonction de redéfinition
 polmundsb %>% 
